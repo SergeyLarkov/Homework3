@@ -1,44 +1,52 @@
 
-fun min2text(m : Int) : String {
-    return if (m % 10 == 1) "минуту"
-           else if ((m % 10 < 5) && (m > 20))  m.toString() + " минуты"
-           else m.toString() + " минут"
-}
+const val VKPAY = "VK Pay"
+const val MASTERCARD = "Mastercard"
+const val MAESTRO = "Maestro"
+const val VISA = "Visa"
+const val MIR = "Мир"
 
-fun hour2text(h : Int) : String {
-    return if (h % 10 == 1) "час"
-           else if ((h % 10 < 5) && (h > 20)) h.toString() + " часа"
-           else h.toString() + " часов"
-}
+fun comissionCount(paySum:Int, cardType:String = VKPAY, payInMonth:Int = 0):Int {
+    var comission = 0
+    var masterNoComission = 75_000_00
 
-fun time2text(seconds : Int) : Any {
-    val minute = 60
-    val hour =  minute * 60
-    val day = hour * 24
-
-    /*
-    return if (seconds < minute) "только что"
-           else if (seconds < hour) min2text(seconds / minute)
-           else if (seconds < day) hour2text ( seconds / hour)
-           else if (seconds < 2*day) "сегодня"
-           else if (seconds < 3*day) "вчера"
-           else "давно"
-     */
-
-    return when (seconds) {
-        in 0..minute-1 -> "только что"
-        in minute..hour-1 -> min2text(seconds / minute) + " назад"
-        in hour..day-1 -> hour2text ( seconds / hour) + " назад"
-        in day..2*day-1 -> "сегодня"
-        in 2*day..3*day-1 -> "вчера"
-        else -> "давно"
+    when (cardType) {
+        MASTERCARD,MAESTRO -> {
+            comission = if (paySum + payInMonth <= masterNoComission) 0 else paySum * 60/10000 + 20_00
+        }
+        VISA,MIR -> {
+            comission = if (paySum * 75/10000 < 3500) 35_00 else paySum * 75/10000
+        }
     }
+
+    return comission
 }
+
+fun pay(paySum:Int, cardType:String = VKPAY, payInMonth:Int = 0): Boolean {
+    val cardMonthLinit = 600_000_00
+    val cardDayLinit = 150_000_00
+    val vkMonthLinit = 40_000_00
+    val vkDayLinit = 15_000_00
+
+    val dayLimit = if (cardType == VKPAY) vkDayLinit else cardDayLinit
+    val monthLimit = if (cardType == VKPAY) vkMonthLinit else cardMonthLinit
+
+    val result =
+        if ((paySum > dayLimit) || (payInMonth + paySum > monthLimit)) {
+            println("Платеж отменен, превышение лимитов!")
+             false
+        } else {
+            val comission = comissionCount(paySum, cardType, payInMonth)
+            println("Сумма комиссии составит: " + comission / 100 + " руб. " + comission % 100 + " коп.")
+            true
+    }
+    return result
+}
+
 
 fun main() {
+    val toPay = 20000_00
+    var payinMonth = 579000_00
 
-    val timeAfterExit: Int = 19167
-    val userName = "Вася"
+    if (pay(toPay, MIR , payinMonth)) payinMonth = payinMonth + toPay
 
-    println("Пользователь " + userName + " был(a) в сети " + time2text(timeAfterExit))
 }
