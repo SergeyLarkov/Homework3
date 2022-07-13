@@ -5,6 +5,24 @@ const val MAESTRO = "Maestro"
 const val VISA = "Visa"
 const val MIR = "Mir"
 
+/*
+fun comissionCount(paySum:Int, cardType:String = VKPAY, payInMonth:Int = 0):Int {
+    var comission = 0
+    var masterNoComission = 75_000_00
+
+    when (cardType) {
+        MASTERCARD,MAESTRO -> {
+            comission = if (paySum + payInMonth <= masterNoComission) 0 else paySum * 60/10000 + 20_00
+        }
+        VISA,MIR -> {
+            comission = if (paySum * 75/10000 < 3500) 35_00 else paySum * 75/10000
+        }
+    }
+
+    return comission
+}
+*/
+
 fun comissionCount(paySum:Int, cardType:String = VKPAY, payInMonth:Int = 0):Int {
     val comission: Int
     val masterNoComission = 75_000_00
